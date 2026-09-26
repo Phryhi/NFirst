@@ -29,4 +29,10 @@ public class NotasController : ControllerBase
 
         return Ok(resultado);
     }
+    [HttpPost("EnviarArquivos")]
+    public IActionResult EnviarArquivos(List<IFormFile> arquivos)
+    {
+        _service.ProcessarArquivos(arquivos);
+        return Ok(new {mensagem = $"Recebi {arquivos.Count} arquivos."});
+    }
 }
