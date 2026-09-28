@@ -2,15 +2,83 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NFirst</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Processar arquivos XML</h1>
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-layer-group"></i>
+            <span>NFirst</span>
+        </div>
+        <nav>
+            <a href="#" class="menu-itens">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="#" class="menu-itens">
+                <i class="fa-solid fa-file-arrow-up"></i>
+                <span>Enviar arquivo</span>
+            </a>
+        </nav>
+
+    </aside>
+    <main class="content">
+        <h1>Dashboard</h1>
+        <section class="cards">
+
+            <!-- XLMs Processados -->
+            <div class="card">
+                <div class="card-info">
+                    <span class="card-title">XLMs Processados</span>
+                    <strong>1.248</strong>
+                    <small> +85 hoje</small>
+                </div>
+
+                <div class="card-icon blue">
+                    <i class="fa-solid fa-file-circle-check"></i>
+                </div>
+            </div>
+
+            <!-- NFC-e Válidas -->
+            <div class="card">
+                <div class="card-info">
+                    <span class="card-title">NFC-e Válidas</span>
+                    <strong>1.987</strong>
+                    <small>95,5% do total</small>
+                </div>
+
+                <div class="card-icon green">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+            </div>
+
+            <!-- Crédito Disponível -->
+            <div class="card">
+                <div class="card-info">
+                    <span class="card-title">Crédito Disponível</span>
+                    <strong>R$ 12.450,00</strong>
+                    <small>Total das notas válidas</small>
+                </div>
+
+                <div class="card-icon lavender">
+                    <i class="fa-solid fa-dollar-sign"></i>
+                </div>
+            </div>
+
+        </section>
+        
+
+    </main>
+    <!-- <h1>Processar arquivos XML</h1>
     <input type="file" id="pasta" webkitdirectory>
     <button onclick="enviarPasta()">Enviar pasta</button>
 
     <p id="resultado"></p>
 
-    <script src="script.js"></script>
+    <script src="script.js"></script> -->
 </body>
 </html>
