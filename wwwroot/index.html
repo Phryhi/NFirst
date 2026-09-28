@@ -4,81 +4,185 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NFirst</title>
+    <!-- Fonte Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <!-- Sidebar -->
     <aside class="sidebar">
         <div class="logo">
-            <i class="fa-solid fa-layer-group"></i>
-            <span>NFirst</span>
+            <span class="logo-badge">NF</span>
+            <span class="logo-text">NFirst</span>
         </div>
         <nav>
-            <a href="#" class="menu-itens">
-                <i class="fa-solid fa-chart-line"></i>
+            <a href="#" class="menu-itens active">
+                <i class="fa-solid fa-chart-pie"></i>
                 <span>Dashboard</span>
             </a>
-
-            <a href="#" class="menu-itens">
+            <a href="#" id="btnOpenProcessNav" class="menu-itens">
                 <i class="fa-solid fa-file-arrow-up"></i>
-                <span>Enviar arquivo</span>
+                <span>Processar XMLs</span>
+            </a>
+            <a href="#" class="menu-itens">
+                <i class="fa-solid fa-receipt"></i>
+                <span>Notas fiscais</span>
             </a>
         </nav>
-
     </aside>
+
+    <!-- Conteúdo Principal -->
     <main class="content">
-        <h1>Dashboard</h1>
+        <header class="dashboard-header">
+            <div>
+                <h1>Dashboard</h1>
+                <p class="subtitle">Validação de NFC-e e cálculo de crédito</p>
+            </div>
+            <button class="btn-primary" id="btnOpenProcess">
+                <i class="fa-solid fa-folder-open"></i> Selecionar pasta de XMLs
+            </button>
+        </header>
+
+        <!-- Cards -->
         <section class="cards">
-
-            <!-- XLMs Processados -->
-            <div class="card">
-                <div class="card-info">
-                    <span class="card-title">XLMs Processados</span>
-                    <strong>1.248</strong>
-                    <small> +85 hoje</small>
-                </div>
-
-                <div class="card-icon blue">
-                    <i class="fa-solid fa-file-circle-check"></i>
-                </div>
+            <div class="card card-blue">
+                <span class="card-indicator"></span>
+                <span class="card-title">XMLs processados</span>
+                <strong class="card-value">1.248</strong>
+                <small class="card-badge">+185 hoje</small>
             </div>
-
-            <!-- NFC-e Válidas -->
-            <div class="card">
-                <div class="card-info">
-                    <span class="card-title">NFC-e Válidas</span>
-                    <strong>1.987</strong>
-                    <small>95,5% do total</small>
-                </div>
-
-                <div class="card-icon green">
-                    <i class="fa-solid fa-circle-check"></i>
-                </div>
+            <div class="card card-green">
+                <span class="card-indicator"></span>
+                <span class="card-title">NFC-e válidas</span>
+                <strong class="card-value">1.192</strong>
+                <small class="card-badge">95,5% do total</small>
             </div>
-
-            <!-- Crédito Disponível -->
-            <div class="card">
-                <div class="card-info">
-                    <span class="card-title">Crédito Disponível</span>
-                    <strong>R$ 12.450,00</strong>
-                    <small>Total das notas válidas</small>
-                </div>
-
-                <div class="card-icon lavender">
-                    <i class="fa-solid fa-dollar-sign"></i>
-                </div>
+            <div class="card card-purple">
+                <span class="card-indicator"></span>
+                <span class="card-title">Crédito disponível</span>
+                <strong class="card-value">R$ 18.430,55</strong>
+                <small class="card-badge">Soma das notas válidas</small>
             </div>
-
         </section>
-        
 
+        <!-- Tabela -->
+        <section class="table-container">
+            <h2>Últimas notas processadas</h2>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Chave de acesso</th>
+                            <th>Data</th>
+                            <th>Valor</th>
+                            <th>Crédito</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="font-mono">35260912345678000190650010000123411482253411</td>
+                            <td>24/09/2026</td>
+                            <td>R$ 187,40</td>
+                            <td>R$ 3,75</td>
+                            <td><span class="badge status-valid">Válida</span></td>
+                        </tr>
+                        <tr>
+                            <td class="font-mono">35260912345678000190650010000123401482253400</td>
+                            <td>24/09/2026</td>
+                            <td>R$ 62,90</td>
+                            <td>R$ 1,26</td>
+                            <td><span class="badge status-valid">Válida</span></td>
+                        </tr>
+                        <tr>
+                            <td class="font-mono">35260912345678000190650010000123391482253399</td>
+                            <td>24/09/2026</td>
+                            <td>R$ 250,00</td>
+                            <td>—</td>
+                            <td><span class="badge status-invalid">Inválida</span></td>
+                        </tr>
+                        <tr>
+                            <td class="font-mono">35260912345678000190650010000123381482253388</td>
+                            <td>23/09/2026</td>
+                            <td>R$ 34,50</td>
+                            <td>R$ 0,69</td>
+                            <td><span class="badge status-valid">Válida</span></td>
+                        </tr>
+                        <tr>
+                            <td class="font-mono">35260912345678000190650010000123371482253377</td>
+                            <td>23/09/2026</td>
+                            <td>R$ 419,99</td>
+                            <td>R$ 8,40</td>
+                            <td><span class="badge status-valid">Válida</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </main>
-    <!-- <h1>Processar arquivos XML</h1>
-    <input type="file" id="pasta" webkitdirectory>
-    <button onclick="enviarPasta()">Enviar pasta</button>
 
-    <p id="resultado"></p>
+    <!-- Modal Glassmorphism -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="glass-modal">
+            <button class="btn-close" id="btnCloseModal">&times;</button>
+            <h2 class="modal-title">Processar Arquivos XML</h2>
+            <p class="modal-subtitle">Selecione uma pasta ou arquivos XML para iniciar a análise.</p>
 
-    <script src="script.js"></script> -->
+            <div class="file-drop-area" id="dropArea">
+                <!-- Ícone Inicial Estático -->
+                <div class="static-icon-wrapper" id="staticIcon">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                </div>
+
+                <!-- Ícone Animado (Escondido inicialmente) -->
+                <div class="icon-wrapper" id="animatedIcon" style="display: none;">
+                    <svg class="analyzer-svg" viewBox="0 0 100 125" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <mask id="magnifierMask">
+                                <rect x="-50" y="-50" width="200" height="200" fill="black" />
+                                <circle id="maskCircle" cx="35" cy="35" r="14" fill="white" />
+                            </mask>
+                        </defs>
+                        <rect x="13" y="13" width="76" height="100" rx="12" fill="#000" fill-opacity="0.03"/>
+                        <rect class="doc-body" x="10" y="10" width="76" height="100"/>
+                        <path class="doc-fold" d="M 66 10 L 86 30 L 66 30 Z"/>
+                        <g id="lines-base-group">
+                            <rect class="line-base" x="22" y="32" width="30" height="4" />
+                            <rect class="line-base" x="22" y="44" width="52" height="4" />
+                            <rect class="line-base" x="22" y="56" width="42" height="4" />
+                            <rect class="line-base" x="22" y="68" width="52" height="4" />
+                            <rect class="line-base" x="22" y="80" width="48" height="4" />
+                            <rect class="line-base" x="22" y="92" width="25" height="4" />
+                        </g>
+                        <g class="lines-colored-group">
+                            <rect id="colored-line-1" x="22" y="44" width="52" height="4" rx="2" />
+                            <rect id="colored-line-2" x="22" y="56" width="42" height="4" rx="2" />
+                            <rect id="colored-line-3" x="22" y="68" width="52" height="4" rx="2" />
+                            <rect id="colored-line-4" x="22" y="80" width="48" height="4" rx="2" />
+                        </g>
+                        <g id="magnifierVisual" class="magnifier-group">
+                            <path class="cabo-lupa" d="M 45 45 L 56 56"/>
+                            <circle class="lente-vidro" cx="35" cy="35" r="14"/>
+                            <path class="lente-brilho" d="M 28 29 A 9 9 0 0 1 39 26"/>
+                        </g>
+                    </svg>
+                </div>
+
+                <p class="drop-text" id="dropText">Arraste e solte seus arquivos ou <span class="browse-btn">procure no computador</span></p>
+                <input type="file" id="fileInput" webkitdirectory directory multiple hidden>
+            </div>
+
+            <button class="btn-primary btn-block" id="btnProcess">
+                <i class="fa-solid fa-gear"></i> Processar Agora
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
