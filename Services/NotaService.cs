@@ -164,7 +164,6 @@ public class NotaService
 
             decimal valor = decimal.Parse(vNF.Value, CultureInfo.InvariantCulture);
 
-            string cpf = null;
             XElement dest = infNFe.Element(ns + "dest");
 
             if (dest != null)
@@ -173,13 +172,12 @@ public class NotaService
 
                 if (tagCpf != null)
                 {
-                    cpf = tagCpf.Value;
+                    return null;
                 }
             }
 
             NotaFiscal nota = new NotaFiscal();
             nota.Chave = chave;
-            nota.Cpf = cpf;
             nota.Valor = valor;
             nota.TipoNota = true;
 
