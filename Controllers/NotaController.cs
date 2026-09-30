@@ -35,4 +35,10 @@ public class NotasController : ControllerBase
         _service.ProcessarArquivos(arquivos);
         return Ok(new {mensagem = $"Recebi {arquivos.Count} arquivos."});
     }
+    [HttpPost("ValidarArquivos")]
+    public IActionResult ValidarArquivos(List<IFormFile> arquivos)
+    {
+        List<NotaFiscal> notasValidas = _service.ValidarArquivos(arquivos);
+        return Ok(notasValidas);
+    }
 }
