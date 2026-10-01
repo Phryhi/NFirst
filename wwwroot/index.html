@@ -2,14 +2,78 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>NFirst</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Processar arquivos XML</h1>
-    <input type="file" id="pasta" webkitdirectory>
-    <button onclick="enviarPasta()">Enviar pasta</button>
+    <div class="fundo" aria-hidden="true"><i></i><i></i><i></i></div>
 
-    <p id="resultado"></p>
+    <main>
+        <header>
+            <div class="logo-container">
+                <svg class="logo-icone" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <rect x="2" y="2" width="28" height="28" rx="8" fill="url(#gradienteLogo)"/>
+                    <path d="M10 22V10L17 18V10" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M22 10V22" stroke="#34D399" stroke-width="2.5" stroke-linecap="round"/>
+                    <defs>
+                        <linearGradient id="gradienteLogo" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#5B7CFA"/>
+                            <stop offset="1" stop-color="#3F5FE0"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1>NFirst</h1>
+            </div>
+            <p>Processe uma pasta de arquivos XML para extrair sua respectiva chave.</p>
+        </header>
+
+        <section class="vidro">
+            <h2>Arquivos</h2>
+            <div class="acoes">
+                <label class="selecionar" id="caixaInput" for="pasta">
+                    <input type="file" id="pasta" webkitdirectory>
+                    <span id="rotuloPasta">Selecionar pasta</span>
+                </label>
+                <button id="btnEnviar" class="primario" onclick="processar()">Enviar pasta</button>
+                <button id="btnBaixar" class="secundario" onclick="baixarJson()" disabled>Baixar JSON</button>
+            </div>
+
+            <p id="resultado" role="status"></p>
+
+            <div id="scanner" class="scanner" hidden aria-label="Processando arquivos">
+                <svg viewBox="0 0 240 180" aria-hidden="true">
+                    <rect x="40" y="8" width="130" height="162" rx="10" class="doc"/>
+                    <rect class="linha" data-cor="#34d399" x="58" y="30"  width="86" height="8" rx="4"/>
+                    <rect class="linha" data-cor="#fb7185" x="58" y="52"  width="62" height="8" rx="4"/>
+                    <rect class="linha" data-cor="#f472b6" x="58" y="74"  width="94" height="8" rx="4"/>
+                    <rect class="linha" data-cor="#60a5fa" x="58" y="96"  width="70" height="8" rx="4"/>
+                    <rect class="linha" data-cor="#fbbf24" x="58" y="118" width="88" height="8" rx="4"/>
+                    <rect class="linha" data-cor="#a78bfa" x="58" y="140" width="54" height="8" rx="4"/>
+                    <g id="lupa" style="transform: translate(120px, 20px)">
+                        <circle r="17" class="lente"/>
+                        <line x1="12" y1="12" x2="30" y2="30" class="cabo"/>
+                    </g>
+                </svg>
+                <p>Verificando notas…</p>
+            </div>
+
+            <div id="containerJson" class="json-container" hidden>
+                <div class="json-header">
+                    <span>Resultado do JSON</span>
+                    <button class="btn-copiar" onclick="copiarJson()">Copiar JSON</button>
+                </div>
+                <pre><code id="jsonViewer"></code></pre>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>v1.0.0 &bull; NFirst &copy; 2026 created by 404</p>
+    </footer>
 
     <script src="script.js"></script>
 </body>
