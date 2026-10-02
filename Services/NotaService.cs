@@ -33,8 +33,20 @@ public class NotaService
 
         foreach (IFormFile arquivo in arquivos)
         {
-            NotaTemporaria nota = LerNota(arquivo);
-            notas.Add(nota);
+            if (!arquivo.FileName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            try
+            {
+                NotaTemporaria nota = LerNota(arquivo);
+                notas.Add(nota);
+            }
+            catch (Exception erro)
+            {
+                Console.WriteLine("Erro ao ler " + arquivo.FileName + ": " + erro.Message);
+            }
         }
 
         GuardarJsonNota(notas);
@@ -45,14 +57,14 @@ public class NotaService
         Console.WriteLine("Iniciando leitura");
         using TextReader reader = new StreamReader(arquivo.OpenReadStream());
         string xml = reader.ReadToEnd();
-        
+
         XDocument documento = XDocument.Parse(xml);
         XElement infNFe = documento.Descendants().FirstOrDefault(x => x.Name.LocalName == "infNFe");
 
         string chave = infNFe?.Attribute("Id")?.Value.Replace("NFe", "");
 
         Console.WriteLine("Fim leitura");
-        return new NotaTemporaria{chaveXml = chave};
+        return new NotaTemporaria { chaveXml = chave };
     }
     public void GuardarJsonNota(List<NotaTemporaria> notas)
     {
@@ -61,7 +73,7 @@ public class NotaService
         Directory.CreateDirectory(pasta);
         string caminho = Path.Combine(pasta, "notasTemp.json");
         string json = JsonSerializer.Serialize(notas);
-        
+
         File.WriteAllText(caminho, json);
         Console.WriteLine("Arquivo guardado");
     }

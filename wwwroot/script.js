@@ -4,27 +4,38 @@ async function enviarPasta() {
 
     if (input.files.length === 0) {
         resultado.innerText = "Selecione uma pasta.";
-        return;
+        return null;
     }
-
     const formData = new FormData();
-
     for (const arquivo of input.files) {
-        formData.append("arquivos", arquivo);
+        formData.append("arquivos", arquivo, arquivo.name);
     }
 
-    const resposta = await fetch("/Notas/EnviarArquivos", {
-        method: "POST",
-        body: formData
-    });
+    try {
+        const resposta = await fetch("/Notas/EnviarArquivos", {
+            method: "POST",
+            body: formData
+        });
 
-    if (!resposta.ok) {
-        resultado.innerText = `Erro ao enviar arquivos: ${resposta.status}`;
-        return;
+        let dados = null;
+        try {
+            dados = await resposta.json();
+        } catch {
+            
+        }
+
+        if (!resposta.ok) {
+            const mensagemErro = dados?.mensagem || `Erro ${resposta.status}: O servidor não conseguiu processar a requisição.`;
+            resultado.innerText = mensagemErro;
+            return null;
+        }
+
+        resultado.innerText = dados?.mensagem || "Arquivos enviados com sucesso.";
+        return dados?.notas || null;
+    } catch (erro) {
+        resultado.innerText = "Erro de conexão com o servidor.";
+        return null;
     }
-
-    const dados = await resposta.json();
-    resultado.innerText = dados.mensagem;
 }
 
 const $ = (id) => document.getElementById(id);
@@ -51,36 +62,18 @@ async function processar() {
     const pararScanner = iniciarScanner();
 
     try {
-        await Promise.all([enviarPasta(), dormir(2500)]);
+        const [notasServidor] = await Promise.all([enviarPasta(), dormir(2500)]);
 
-        if (!$("resultado").innerText.startsWith("Erro")) {
-            jsonGerado = await extrairChaves();
-            $("btnBaixar").disabled = jsonGerado.length === 0;
-
-            if (jsonGerado.length > 0) {
-                $("jsonViewer").textContent = JSON.stringify(jsonGerado, null, 2);
-                $("containerJson").hidden = false;
-            }
+        if (Array.isArray(notasServidor) && notasServidor.length > 0) {
+            jsonGerado = notasServidor;
+            $("btnBaixar").disabled = false;
+            $("jsonViewer").textContent = JSON.stringify(jsonGerado, null, 2);
+            $("containerJson").hidden = false;
         }
     } finally {
         pararScanner();
         $("btnEnviar").disabled = false;
     }
-}
-
-async function extrairChaves() {
-    const lista = [];
-    for (const arquivo of $("pasta").files) {
-        if (!arquivo.name.toLowerCase().endsWith(".xml")) continue;
-        try {
-            const doc = new DOMParser().parseFromString(await arquivo.text(), "application/xml");
-            if (doc.getElementsByTagName("parsererror").length) continue;
-            const infNFe = doc.getElementsByTagNameNS("*", "infNFe")[0];
-            const id = infNFe?.getAttribute("Id");
-            if (id) lista.push({ chaveXml: id.replace(/^NFe/, "") });
-        } catch {}
-    }
-    return lista;
 }
 
 function baixarJson() {

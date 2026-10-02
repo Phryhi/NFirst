@@ -16,6 +16,7 @@ body {
     display: flex; flex-direction: column;
 }
 
+/* fundo */
 .fundo { position: fixed; inset: 0; overflow: hidden; z-index: -1;
     background: radial-gradient(120% 90% at 50% 0%, #17224a 0%, #0a1020 70%); }
 .fundo i { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .55; }
@@ -25,6 +26,7 @@ body {
 
 main { flex: 1; width: 100%; max-width: 980px; margin: 0 auto; padding: 56px 20px 32px; }
 
+/* Logo & Cabeçalho */
 .logo-container { display: flex; align-items: center; gap: 12px; }
 .logo-icone { width: 36px; height: 36px; flex-shrink: 0; }
 header h1 { margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.015em; }
@@ -66,6 +68,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 #resultado { margin: 14px 0 0; color: var(--suave); }
 #resultado:empty { display: none; }
 
+/* Scanner */
 .scanner { display: flex; flex-direction: column; align-items: center; padding: 18px 0 2px; }
 .scanner[hidden] { display: none; }
 .scanner svg { width: 220px; height: auto; overflow: visible; }
@@ -76,6 +79,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .cabo { stroke: #a5b8ff; stroke-width: 6; stroke-linecap: round; }
 #lupa { transition: transform .5s ease-in-out; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .35)); }
 
+/* Visualizador do JSON */
 .json-container {
     margin-top: 20px;
     background: rgba(10, 16, 32, 0.7);
@@ -110,6 +114,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
     color: #34d399;
 }
 
+/* Rodapé */
 footer {
     text-align: center;
     padding: 20px;
