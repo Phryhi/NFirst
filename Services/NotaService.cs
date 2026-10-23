@@ -26,6 +26,40 @@ public class NotaService
 
         return nota;
     }
+    private static string FormatarMesAno(string chave)
+    {
+        if (string.IsNullOrWhiteSpace(chave) || chave.Length != 44)
+        {
+            return null;
+        }
+
+        string ano = "20" + chave.Substring(2, 2);
+        string mes = chave.Substring(4, 2);
+
+        if (!int.TryParse(mes, out int numeroMes) ||
+            numeroMes < 1 || numeroMes > 12)
+        {
+            return null;
+        }
+
+        return $"{mes}/{ano}";
+    }
+    private static bool ChaveEhNfce(string chave)
+    {
+        if (string.IsNullOrWhiteSpace(chave))
+            return false;
+
+        if (chave.Length != 44 || !chave.All(char.IsDigit))
+            return false;
+
+        if (chave.Substring(20, 2) != "65")
+            return false;
+
+        if (FormatarMesAno(chave) == null)
+            return false;
+
+        return true;
+    }
     public void ProcessarArquivos(List<IFormFile> arquivos)
     {
         Console.WriteLine("Iniciando processamento");
@@ -41,7 +75,10 @@ public class NotaService
             try
             {
                 NotaTemporaria nota = LerNota(arquivo);
-                notas.Add(nota);
+                if (nota != null)
+                {
+                    notas.Add(nota);
+                }
             }
             catch (Exception erro)
             {
@@ -60,8 +97,17 @@ public class NotaService
 
         XDocument documento = XDocument.Parse(xml);
         XElement infNFe = documento.Descendants().FirstOrDefault(x => x.Name.LocalName == "infNFe");
+        string chave = infNFe?.Attribute("Id")?.Value;
 
-        string chave = infNFe?.Attribute("Id")?.Value.Replace("NFe", "");
+        if (chave != null && chave.StartsWith("NFe"))
+        {
+            chave = chave.Substring(3);
+        }
+        if (!ChaveEhNfce(chave))
+        {
+            Console.WriteLine("chave inválida ou modelo diferente de 65");
+            return null;
+        }
 
         Console.WriteLine("Fim leitura");
         return new NotaTemporaria { chaveXml = chave };
@@ -77,9 +123,10 @@ public class NotaService
         File.WriteAllText(caminho, json);
         Console.WriteLine("Arquivo guardado");
     }
-    public List<NotaFiscal> ValidarArquivos(List<IFormFile> arquivos)
+    public List<NotaFiscal> ValidarArquivos(List<IFormFile> arquivos, out int notasJaProcessadas)
     {
         List<NotaFiscal> notasValidas = new List<NotaFiscal>();
+        notasJaProcessadas = 0;
 
         foreach (IFormFile arquivo in arquivos)
         {
@@ -87,8 +134,22 @@ public class NotaService
 
             if (nota != null)
             {
-                _context.Notas.Add(nota);
-                notasValidas.Add(nota);
+                Console.WriteLine("Chave encontrada: " + nota.Chave);
+                Console.WriteLine("Existe no banco: " +
+                    _context.Notas.Any(n => n.Chave == nota.Chave));
+                bool existe = _context.Notas.Any(n => n.Chave == nota.Chave);
+                bool repetidaNaLista = notasValidas.Any(n => n.Chave == nota.Chave);
+
+                if (!existe && !repetidaNaLista)
+                {
+                    _context.Notas.Add(nota);
+                    notasValidas.Add(nota);
+                }
+                else
+                {
+                    notasJaProcessadas++;
+                    Console.WriteLine("Nota já processada: " + nota.Chave);
+                }
             }
         }
 
@@ -133,6 +194,13 @@ public class NotaService
             {
                 chave = chave.Substring(3);
             }
+            if (!ChaveEhNfce(chave))
+            {
+                return null;
+            }
+
+            string anoMes = chave.Substring(2, 4);
+            string mesAno = anoMes.Substring(2, 2) + "/20" + anoMes.Substring(0, 2);
 
             XElement ide = infNFe.Element(ns + "ide");
 
