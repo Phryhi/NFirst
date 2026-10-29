@@ -33,11 +33,10 @@ public class NotasController : ControllerBase
     [HttpPost("EnviarArquivos")]
     public IActionResult EnviarArquivos(List<IFormFile> arquivos)
     {
-        _service.ProcessarArquivos(arquivos);
-        int notasJaProcessadas;
-        List<NotaFiscal> notasValidas = _service.ValidarArquivos(arquivos,out notasJaProcessadas);
+        var notasValidas = _service.ValidarArquivos(arquivos, out int notasJaProcessadas);
+        List<string> nomesArquivos = _service.GuardarJsonNota(notasValidas);
 
-        var chaves = notasValidas.Select(n => new { chaveXml = n.Chave }).ToList();
+        var chaves = notasValidas.Select((n, i) => new { sequencia = i + 1, chaveXml = n.Chave }).ToList();
         string mensagem;
 
         if (notasJaProcessadas > 0)
@@ -53,7 +52,7 @@ public class NotasController : ControllerBase
             mensagem = $"Recebi {arquivos.Count} arquivos. {notasValidas.Count} notas salvas.";
         }
 
-        return Ok(new { mensagem = mensagem, notas = chaves });
+        return Ok(new { mensagem = mensagem, arquivos = nomesArquivos, notas = chaves });
     }
     [HttpPost("ValidarArquivos")]
     public IActionResult ValidarArquivos(List<IFormFile> arquivos)
@@ -61,5 +60,17 @@ public class NotasController : ControllerBase
         int notasJaProcessadas;
         List<NotaFiscal> notasValidas = _service.ValidarArquivos(arquivos,out notasJaProcessadas);
         return Ok(notasValidas);
+    }
+
+    [HttpGet("Download/{nome}")]
+    public IActionResult Download(string nome)
+    {
+        string nomeSeguro = Path.GetFileName(nome);
+        string caminho = Path.Combine("Temp", nomeSeguro);
+
+        if (!System.IO.File.Exists(caminho))
+            return NotFound();
+
+        return PhysicalFile(Path.GetFullPath(caminho), "text/plain", nomeSeguro);
     }
 }

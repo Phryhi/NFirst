@@ -31,6 +31,7 @@ async function enviarPasta() {
         }
 
         resultado.innerText = dados?.mensagem || "Arquivos enviados com sucesso.";
+        arquivoGerado = dados?.arquivo || null;
         return dados?.notas || null;
     } catch (erro) {
         resultado.innerText = "Erro de conexão com o servidor.";
@@ -47,6 +48,7 @@ $("pasta").addEventListener("change", () => {
 });
 
 let jsonGerado = null;
+let arquivoGerado = null;
 
 async function processar() {
     if ($("pasta").files.length === 0) {
@@ -59,6 +61,7 @@ async function processar() {
     $("containerJson").hidden = true;
 
     jsonGerado = null;
+    arquivoGerado = null;
     const pararScanner = iniciarScanner();
 
     try {
@@ -77,14 +80,8 @@ async function processar() {
 }
 
 function baixarJson() {
-    if (!jsonGerado) return;
-    const blob = new Blob([JSON.stringify(jsonGerado, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `nfirst-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    if (!arquivoGerado) return;
+    window.location.href = `/Notas/Download/${encodeURIComponent(arquivoGerado)}`;
 }
 
 function copiarJson() {

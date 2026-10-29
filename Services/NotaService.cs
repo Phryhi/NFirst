@@ -196,112 +196,37 @@ public class NotaService
             return CopiarParaMemoria(arquivo);
         }
     }
-    public void ProcessarArquivos(List<IFormFile> arquivos)
+
+    // Gera o JSON sequencial a partir das notas JÁ VALIDADAS.
+    // Gera um arquivo mmaaaaxxxxx.txt por combinação de mês/ano + 5 primeiros dígitos do CNPJ.
+    // Devolve os nomes dos arquivos gerados (lista vazia se não houver notas).
+    public List<string> GuardarJsonNota(List<NotaFiscal> notasValidas)
     {
-        Stopwatch cronometro = Stopwatch.StartNew();
-        Console.WriteLine("Iniciando processamento");
+        List<string> arquivosGerados = new List<string>();
 
-        List<IFormFile> candidatos = SelecionarCandidatos(arquivos, out int descartadosPeloNome);
-        NotaTemporaria[] lidas = new NotaTemporaria[candidatos.Count];
-        object trava = new object();
-
-        Parallel.For(0, candidatos.Count, OpcoesParalelo, i =>
+        if (notasValidas.Count == 0)
         {
-            IFormFile arquivo = candidatos[i];
-
-            try
-            {
-                lidas[i] = LerNota(arquivo, trava);
-            }
-            catch (Exception erro)
-            {
-                Console.WriteLine("Erro ao ler " + arquivo.FileName + ": " + erro.Message);
-            }
-        });
-
-        List<NotaTemporaria> notas = new List<NotaTemporaria>(lidas.Length);
-
-        foreach (NotaTemporaria nota in lidas)
-        {
-            if (nota != null)
-            {
-                notas.Add(nota);
-            }
+            return arquivosGerados;
         }
 
-        if (notas.Count == 0)
-        {
-            GuardarJsonNota(notas);
-        }
-        else
-        {
-            foreach (IGrouping<string, NotaTemporaria> grupo in notas.GroupBy(
-                         n => FormatarMesAno(n.chaveXml).Replace("/", "") + n.chaveXml.Substring(6, 5)))
-            {
-                string mesAno = grupo.Key.Substring(0, 6);  
-                string cnpj5 = grupo.Key.Substring(6, 5);   
-
-                GuardarJsonNota(grupo.ToList(), mesAno, cnpj5);
-            }
-        }
-
-        Console.WriteLine($"Fim processamento: {notas.Count} lidas, {descartadosPeloNome} descartadas pelo nome, {cronometro.ElapsedMilliseconds} ms");
-    }
-
-    public NotaTemporaria LerNota(IFormFile arquivo)
-    {
-        return LerNota(arquivo, null);
-    }
-
-    private NotaTemporaria LerNota(IFormFile arquivo, object trava)
-    {
-        using Stream stream = AbrirXml(arquivo, trava);
-
-        return LerNotaXml(stream);
-    }
-
-    private static NotaTemporaria LerNotaXml(Stream stream)
-    {
-        using XmlReader reader = XmlReader.Create(stream, ConfigLeitura);
-        string chave = null;
-        while (reader.Read())
-        {
-            if (reader.NodeType == XmlNodeType.Element && reader.LocalName == "infNFe")
-            {
-                chave = reader.GetAttribute("Id");
-                break;
-            }
-        }
-
-        if (chave != null && chave.StartsWith("NFe", StringComparison.Ordinal))
-        {
-            chave = chave.Substring(3);
-        }
-
-        if (!ChaveEhNfce(chave))
-        {
-            return null;
-        }
-
-        return new NotaTemporaria { chaveXml = chave };
-    }
-
-    public void GuardarJsonNota(List<NotaTemporaria> notas, string mesAno = null, string cnpj5 = null)
-    {
         string pasta = "Temp";
         Directory.CreateDirectory(pasta);
 
-        string nomeArquivo = "notasTemp.json";
-        if (!string.IsNullOrEmpty(mesAno) && !string.IsNullOrEmpty(cnpj5))
+        foreach (IGrouping<string, NotaFiscal> grupo in notasValidas.GroupBy(
+                     n => n.Chave.Substring(4, 2) + "20" + n.Chave.Substring(2, 2) + n.Chave.Substring(6, 5)))
         {
-            nomeArquivo = $"{mesAno}{cnpj5}.txt";
+            string nomeArquivo = grupo.Key + ".txt";
+            var itens = grupo.Select((n, i) => new { sequencia = i + 1, chaveXml = n.Chave });
+            string json = JsonSerializer.Serialize(itens, OpcoesJson);
+
+            string caminho = Path.Combine(pasta, nomeArquivo);
+            File.WriteAllText(caminho, json);
+            arquivosGerados.Add(nomeArquivo);
+
+            Console.WriteLine("Arquivo guardado em: " + caminho);
         }
 
-        string caminho = Path.Combine(pasta, nomeArquivo);
-        string json = JsonSerializer.Serialize(notas, OpcoesJson);
-
-        File.WriteAllText(caminho, json);
-        Console.WriteLine("Arquivo guardado em: " + caminho);
+        return arquivosGerados;
     }
     public List<NotaFiscal> ValidarArquivos(List<IFormFile> arquivos, out int notasJaProcessadas)
     {
