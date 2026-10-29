@@ -1,3 +1,9 @@
+let jsonGerado = null;
+let arquivosGerados = [];
+
+const $ = (id) => document.getElementById(id);
+const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
+
 async function enviarPasta() {
     const input = document.getElementById("pasta");
     const resultado = document.getElementById("resultado");
@@ -21,7 +27,7 @@ async function enviarPasta() {
         try {
             dados = await resposta.json();
         } catch {
-            
+
         }
 
         if (!resposta.ok) {
@@ -31,7 +37,7 @@ async function enviarPasta() {
         }
 
         resultado.innerText = dados?.mensagem || "Arquivos enviados com sucesso.";
-        arquivoGerado = dados?.arquivo || null;
+        arquivosGerados = dados?.arquivos || [];
         return dados?.notas || null;
     } catch (erro) {
         resultado.innerText = "Erro de conexão com o servidor.";
@@ -39,16 +45,10 @@ async function enviarPasta() {
     }
 }
 
-const $ = (id) => document.getElementById(id);
-const dormir = (ms) => new Promise((r) => setTimeout(r, ms));
-
 $("pasta").addEventListener("change", () => {
     const n = $("pasta").files.length;
     $("rotuloPasta").textContent = n ? `${n} arquivo(s) selecionado(s)` : "Selecionar pasta";
 });
-
-let jsonGerado = null;
-let arquivoGerado = null;
 
 async function processar() {
     if ($("pasta").files.length === 0) {
@@ -61,7 +61,7 @@ async function processar() {
     $("containerJson").hidden = true;
 
     jsonGerado = null;
-    arquivoGerado = null;
+    arquivosGerados = [];
     const pararScanner = iniciarScanner();
 
     try {
@@ -79,9 +79,21 @@ async function processar() {
     }
 }
 
-function baixarJson() {
-    if (!arquivoGerado) return;
-    window.location.href = `/Notas/Download/${encodeURIComponent(arquivoGerado)}`;
+async function baixarJson() {
+    console.log("arquivosGerados:", arquivosGerados);
+
+    if (arquivosGerados.length === 0) {
+        alert("Nenhum arquivo foi gerado neste envio.");
+        return;
+    }
+
+    for (const nome of arquivosGerados) {
+        const a = document.createElement("a");
+        a.href = `/Notas/Download/${encodeURIComponent(nome)}`;
+        a.download = nome;
+        a.click();
+        await dormir(300);
+    }
 }
 
 function copiarJson() {
