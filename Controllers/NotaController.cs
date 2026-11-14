@@ -36,7 +36,7 @@ public class NotasController : ControllerBase
         var notasValidas = _service.ValidarArquivos(arquivos, out int notasJaProcessadas);
         List<string> nomesArquivos = _service.GuardarJsonNota(notasValidas);
 
-        var chaves = notasValidas.Select((n, i) => new { sequencia = i + 1, chaveXml = n.Chave }).ToList();
+        var chaves = notasValidas.Select(n => new {chave = n.Chave, serie = 65, mesAno = NotaService.FormatarMesAno(n.Chave)}).ToList();
         string mensagem;
 
         if (notasJaProcessadas > 0)

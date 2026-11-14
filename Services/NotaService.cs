@@ -50,7 +50,7 @@ public class NotaService
 
         return nota;
     }
-    private static string FormatarMesAno(string chave)
+    public static string FormatarMesAno(string chave)
     {
         if (string.IsNullOrWhiteSpace(chave) || chave.Length != 44)
         {
@@ -216,7 +216,7 @@ public class NotaService
                      n => n.Chave.Substring(4, 2) + "20" + n.Chave.Substring(2, 2) + n.Chave.Substring(6, 5)))
         {
             string nomeArquivo = grupo.Key + ".txt";
-            var itens = grupo.Select((n, i) => new { sequencia = i + 1, chaveXml = n.Chave });
+            var itens = grupo.Select(n => new { chave = n.Chave, serie = 65, mesAno = FormatarMesAno(n.Chave)});
             string json = JsonSerializer.Serialize(itens, OpcoesJson);
 
             string caminho = Path.Combine(pasta, nomeArquivo);
@@ -305,13 +305,16 @@ public class NotaService
     private static NotaFiscal ValidarNotaXml(Stream stream)
     {
         using XmlReader reader = XmlReader.Create(stream, ConfigLeitura);
+        XDocument documento = XDocument.Load(reader);
 
-        if (!reader.ReadToFollowing("infNFe", NsNfe))
+        XElement infNfe = documento.Descendants(XName.Get("infNFe", NsNfe)).FirstOrDefault();
+
+        if (infNfe == null)
         {
             return null;
         }
 
-        string chave = reader.GetAttribute("Id");
+        string chave = infNfe.Attribute("Id")?.Value;
 
         if (chave == null)
         {
@@ -328,69 +331,35 @@ public class NotaService
             return null;
         }
 
-        if (reader.IsEmptyElement)
+        XElement infProt = documento.Descendants(XName.Get("infProt", NsNfe)).FirstOrDefault();
+
+        string cStat = infProt?.Element(XName.Get("cStat", NsNfe))?.Value;
+
+        if (cStat != "100")
         {
             return null;
         }
 
-        int profundidade = reader.Depth;
-        bool modeloOk = false;
-        bool temValor = false;
-        decimal valor = 0;
+        XElement ide = infNfe.Element(XName.Get("ide", NsNfe));
+        string mod = ide?.Element(NomeMod)?.Value;
 
-        reader.Read();
-
-        while (!reader.EOF && reader.Depth > profundidade)
+        if (mod != "65")
         {
-            if (reader.NodeType != XmlNodeType.Element)
-            {
-                reader.Read();
-                continue;
-            }
-
-            string nome = reader.NamespaceURI == NsNfe ? reader.LocalName : null;
-
-            if (nome == "ide")
-            {
-                XElement ide = (XElement)XNode.ReadFrom(reader);
-                string mod = ide.Element(NomeMod)?.Value;
-
-                if (mod != "65")
-                {
-                    return null;
-                }
-
-                modeloOk = true;
-            }
-            else if (nome == "dest")
-            {
-                XElement dest = (XElement)XNode.ReadFrom(reader);
-
-                if (dest.Element(NomeCpf) != null)
-                {
-                    return null;
-                }
-            }
-            else if (nome == "total")
-            {
-                XElement total = (XElement)XNode.ReadFrom(reader);
-                string textoValor = total.Element(NomeIcmsTot)?.Element(NomeVnf)?.Value;
-
-                if (textoValor == null ||
-                    !decimal.TryParse(textoValor, NumberStyles.Number, CultureInfo.InvariantCulture, out valor))
-                {
-                    return null;
-                }
-
-                temValor = true;
-            }
-            else
-            {
-                reader.Skip();
-            }
+            return null;
         }
 
-        if (!modeloOk || !temValor)
+        XElement dest = infNfe.Element(XName.Get("dest", NsNfe));
+
+        if (dest?.Element(NomeCpf) != null)
+        {
+            return null;
+        }
+
+        XElement total = infNfe.Element(XName.Get("total", NsNfe));
+        string textoValor = total?.Element(NomeIcmsTot)?.Element(NomeVnf)?.Value;
+
+        if (textoValor == null ||
+            !decimal.TryParse(textoValor, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal valor))
         {
             return null;
         }
