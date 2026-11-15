@@ -41,7 +41,9 @@ git --version
 ```
 
 O comando `dotnet --version` deve retornar uma versão iniciada em `10.`.
+
 Não é necessário instalar servidor de banco de dados: o projeto utiliza SQLite, e o arquivo do banco (`nfirst.db`) é criado automaticamente na primeira execução.
+
 Opcionalmente, recomenda-se um editor de código, como o [Visual Studio Code](https://code.visualstudio.com/) ou o [Visual Studio](https://visualstudio.microsoft.com/).
 
 ## Instalação
@@ -68,9 +70,7 @@ Opcionalmente, recomenda-se um editor de código, como o [Visual Studio Code](ht
    | Interface web (frontend) | http://localhost:5189 |
    | Documentação da API (Swagger) | http://localhost:5189/swagger |
 
-   ## Como usar
-
-### Pela interface web
+## Como usar
 
 1. Acesse `http://localhost:5189`.
 2. Clique em **Selecionar pasta** e escolha a pasta que contém os arquivos XML das notas fiscais.
@@ -80,11 +80,7 @@ Opcionalmente, recomenda-se um editor de código, como o [Visual Studio Code](ht
 
 > São consideradas válidas as NFC-e emitidas sem CPF do consumidor. Notas já processadas anteriormente não são salvas novamente, portanto não aparecem no JSON nem nos arquivos para download.
 
-### Pela API
-
-#########
-
-Todos os endpoints estão documentados no Swagger, em `http://localhost:5189/swagger`.
+Os endpoints da API estão documentados no Swagger, em `http://localhost:5189/swagger`.
 
 ## Estrutura do projeto
 
