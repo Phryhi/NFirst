@@ -29,32 +29,42 @@ flowchart LR
 
 ## Fluxo de um envio
 
-```mermaid
-sequenceDiagram
-    actor U as Usuário
-    participant F as Interface web
-    participant C as NotasController
-    participant S as NotaService
-    participant B as Banco SQLite
-    participant T as Pasta Temp
+O diagrama abaixo resume o caminho de um envio, da seleção da pasta até o download dos arquivos.
 
-    U->>F: Seleciona a pasta e clica em Enviar
-    F->>C: POST /Notas/EnviarArquivos
-    C->>S: ValidarArquivos
-    S->>S: Seleciona os arquivos candidatos
-    S->>B: Consulta as chaves já existentes
-    S->>S: Valida cada XML em paralelo
-    S->>B: Salva as notas novas
-    S-->>C: Notas válidas
-    C->>S: GuardarJsonNota
-    S->>T: Grava os arquivos .txt
-    C-->>F: Mensagem, arquivos e notas em JSON
-    F-->>U: Exibe o resultado
-    U->>F: Clica em Baixar TXT
-    F->>C: GET /Notas/Download
-    C->>T: Lê o arquivo
-    C-->>F: Arquivo .txt
+```mermaid
+flowchart TD
+    A(["Usuário seleciona a pasta<br/>e clica em Enviar"]) --> B["Interface envia os arquivos<br/>POST /Notas/EnviarArquivos"]
+    B --> C["1. Seleção dos arquivos<br/>extensão .xml e nome compatível"]
+    C --> D["2. Validação de cada XML, em paralelo<br/>chave, autorização, modelo, CPF e valor"]
+    D --> E{"Nota válida<br/>e chave inédita?"}
+    E -- Sim --> F["3. Salva as notas<br/>no banco de dados"]
+    E -- Não --> G["Nota descartada ou contada<br/>como já processada"]
+    F --> H["4. Gera os arquivos .txt<br/>na pasta Temp"]
+    H --> I["Retorna a mensagem de resumo,<br/>os arquivos e as notas em JSON"]
+    G --> I
+    I --> J(["Interface exibe o resultado"])
+    J --> K(["Usuário clica em Baixar TXT"])
+    K --> L["GET /Notas/Download<br/>devolve os arquivos da pasta Temp"]
+
+    classDef web fill:#dbeafe,stroke:#2563eb,color:#1e293b
+    classDef api fill:#d1fae5,stroke:#059669,color:#1e293b
+    classDef dados fill:#fef3c7,stroke:#d97706,color:#1e293b
+    classDef decisao fill:#ede9fe,stroke:#7c3aed,color:#1e293b
+
+    class A,B,J,K web
+    class C,D,G,I,L api
+    class F,H dados
+    class E decisao
 ```
+
+| Cor | Significado |
+| :--- | :--- |
+| Azul | Interface web e ações do usuário |
+| Verde | Processamento na API |
+| Laranja | Banco de dados e arquivos gerados |
+| Roxo | Ponto de decisão |
+
+As etapas numeradas de 1 a 4 correspondem às seções de [regras-de-negocio.md](regras-de-negocio.md). A decisão da nota é tomada para cada arquivo, e uma nota descartada não interrompe o processamento das demais.
 
 ## Endpoints
 
