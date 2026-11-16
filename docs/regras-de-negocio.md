@@ -147,10 +147,7 @@ Os arquivos ficam disponíveis pelo endpoint `GET /Notas/Download/{nome}`, que d
 | :--- | :--- |
 | Destinatário | A nota sem o bloco de destinatário, ou identificada apenas por CNPJ, é aceita. Somente a presença de CPF a rejeita. |
 | Autorização | Somente o status `100` é aceito. O cancelamento posterior de uma nota não é verificado. |
-| Arquivos descartados | Os arquivos descartados e os erros de leitura não são informados ao usuário e ficam registrados apenas no console da API. A mensagem de resumo conta todos os arquivos recebidos, inclusive os ignorados. |
 | Notas já processadas | A mensagem de resumo usa a mesma expressão para chaves já existentes no banco e para chaves repetidas dentro do próprio envio. |
 | Exportação | O arquivo é gravado com o mesmo nome para o mesmo mês, ano e CNPJ. Um novo envio com notas desse grupo substitui o arquivo anterior, que passa a conter apenas as notas do último envio. As notas antigas permanecem no banco. |
 | Pasta `Temp/` | Os arquivos exportados não são apagados automaticamente. |
-| Dígito verificador | A verificação é controlada pela constante `ValidarDigitoVerificador`, atualmente ativa. |
-| Campo `serie` | Possui valor fixo `65`, que corresponde ao modelo da nota e não à série informada na chave. |
 | Crédito | A API não calcula o crédito. Armazena apenas o valor total da nota. |
