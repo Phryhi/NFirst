@@ -112,14 +112,3 @@ No `Program.cs`, a aplicação executa as seguintes etapas:
 | Gravação das notas em lote | As notas novas são gravadas de uma só vez, ao final da validação. |
 | Download restrito à pasta `Temp/` | O endpoint utiliza apenas o nome do arquivo informado, impedindo o acesso a arquivos de outras pastas. |
 | Swagger somente em desenvolvimento | Evita expor a documentação da API fora do ambiente de desenvolvimento. |
-
-## Limitações conhecidas
-
-| Tema | Descrição |
-| :--- | :--- |
-| Autenticação | Os endpoints não exigem autenticação. O projeto se destina a uso local ou de desenvolvimento. |
-| Envio em uma única requisição | Todos os arquivos da pasta são enviados e processados em uma única requisição, sujeita aos limites de tamanho do servidor. |
-| Arquivos exportados | A pasta `Temp/` não é limpa automaticamente. Um novo envio com notas do mesmo mês, ano e CNPJ substitui o arquivo anterior. |
-| Registro de erros | Os erros de leitura e os arquivos descartados são registrados apenas no console, e não são informados ao usuário. |
-| Campo `serie` | Possui valor fixo `65`, que corresponde ao modelo da nota e não à série informada na chave de acesso. |
-| Crédito | A aplicação não calcula o crédito. Armazena apenas o valor total da nota. |
