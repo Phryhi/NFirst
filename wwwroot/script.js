@@ -114,7 +114,7 @@ function iniciarScanner() {
 
     (async () => {
         while (ativo) {
-            linhas.forEach((l) => (l.style.fill = ""));
+            linhas.forEach((l) => l.classList.remove("verde"));
             lupa.style.transform = "translate(120px, 20px)";
             await dormir(600);
             for (const linha of linhas) {
@@ -122,7 +122,9 @@ function iniciarScanner() {
                 const y = Number(linha.getAttribute("y")) + 4;
                 lupa.style.transform = `translate(${100 + Math.random() * 30}px, ${y}px)`;
                 await dormir(550);
-                linha.style.fill = linha.dataset.cor;
+                // Sorteio: true deixa a linha verde, false mantém a cor original
+                const ficaVerde = Math.random() < 0.5;
+                linha.classList.toggle("verde", ficaVerde);
                 await dormir(150);
             }
             await dormir(700);

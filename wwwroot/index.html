@@ -4,35 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>NFirst</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="fundo" aria-hidden="true"><i></i><i></i><i></i></div>
+    <header class="topo">
+        <div class="topo-conteudo">
+            <a class="logo-container" href="/" aria-label="NFirst - início">
+                <svg class="logo-icone" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <rect x="2" y="2" width="28" height="28" rx="8" fill="#F5F1E8"/>
+                    <path d="M10 22V10L17 18V10" stroke="#2F5D50" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M22 10V22" stroke="#B8893B" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                <span>NFirst</span>
+            </a>
+        </div>
+    </header>
 
     <main>
-        <header>
-            <div class="logo-container">
-                <svg class="logo-icone" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <rect x="2" y="2" width="28" height="28" rx="8" fill="url(#gradienteLogo)"/>
-                    <path d="M10 22V10L17 18V10" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M22 10V22" stroke="#34D399" stroke-width="2.5" stroke-linecap="round"/>
-                    <defs>
-                        <linearGradient id="gradienteLogo" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
-                            <stop stop-color="#5B7CFA"/>
-                            <stop offset="1" stop-color="#3F5FE0"/>
-                        </linearGradient>
-                    </defs>
-                </svg>
-                <h1>NFirst</h1>
-            </div>
-            <p>Processe uma pasta de arquivos XML para extrair sua respectiva chave.</p>
-        </header>
+        <h1>NFirst</h1>
+        <p class="subtitulo">Processe uma pasta de arquivos XML para extrair sua respectiva chave.</p>
 
-        <section class="vidro">
+        <section class="cartao">
             <h2>Arquivos</h2>
+
             <div class="acoes">
                 <label class="selecionar" id="caixaInput" for="pasta">
                     <input type="file" id="pasta" webkitdirectory>
@@ -46,16 +44,16 @@
 
             <div id="scanner" class="scanner" hidden aria-label="Processando arquivos">
                 <svg viewBox="0 0 240 180" aria-hidden="true">
-                    <rect x="40" y="8" width="130" height="162" rx="10" class="doc"/>
-                    <rect class="linha" data-cor="#34d399" x="58" y="30"  width="86" height="8" rx="4"/>
-                    <rect class="linha" data-cor="#fb7185" x="58" y="52"  width="62" height="8" rx="4"/>
-                    <rect class="linha" data-cor="#f472b6" x="58" y="74"  width="94" height="8" rx="4"/>
-                    <rect class="linha" data-cor="#60a5fa" x="58" y="96"  width="70" height="8" rx="4"/>
-                    <rect class="linha" data-cor="#fbbf24" x="58" y="118" width="88" height="8" rx="4"/>
-                    <rect class="linha" data-cor="#a78bfa" x="58" y="140" width="54" height="8" rx="4"/>
-                    <g id="lupa" style="transform: translate(120px, 20px)">
-                        <circle r="17" class="lente"/>
-                        <line x1="12" y1="12" x2="30" y2="30" class="cabo"/>
+                    <rect class="doc" x="40" y="8" width="130" height="162" rx="10"/>
+                    <rect class="linha" x="58" y="30"  width="86" height="8" rx="4"/>
+                    <rect class="linha" x="58" y="52"  width="62" height="8" rx="4"/>
+                    <rect class="linha" x="58" y="74"  width="94" height="8" rx="4"/>
+                    <rect class="linha" x="58" y="96"  width="70" height="8" rx="4"/>
+                    <rect class="linha" x="58" y="118" width="88" height="8" rx="4"/>
+                    <rect class="linha" x="58" y="140" width="54" height="8" rx="4"/>
+                    <g id="lupa">
+                        <circle class="lente" r="17"/>
+                        <line class="cabo" x1="12" y1="12" x2="30" y2="30"/>
                     </g>
                 </svg>
                 <p>Verificando notas…</p>
@@ -72,7 +70,7 @@
     </main>
 
     <footer>
-        <p>&copy; 404</p>
+        <p>&copy;NFirst - Desenvolvido por 404.</p>
     </footer>
 
     <script src="script.js"></script>

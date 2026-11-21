@@ -1,133 +1,370 @@
+/* ==========================================================================
+   Variáveis
+   ========================================================================== */
 :root {
-    --texto: #eef2ff;
-    --suave: #a9b4d0;
-    --vidro: rgba(255, 255, 255, .07);
-    --vidro-forte: rgba(255, 255, 255, .12);
-    --borda: rgba(255, 255, 255, .16);
-    --acento: #6c8dff;
-    --ok: #34d399;   --ok-bg: rgba(52, 211, 153, .16);
-    --erro: #fb7185; --erro-bg: rgba(251, 113, 133, .16);
+    /* Superfícies */
+    --fundo: #f5f1e8;
+    --cartao: #ffffff;
+
+    /* Texto */
+    --texto: #23302b;
+    --texto-suave: #6b7568;
+
+    /* Bordas */
+    --borda: #e3dccb;
+    --borda-forte: #cfc6b0;
+
+    /* Cores da marca */
+    --verde: #2f5d50;
+    --verde-hover: #264c41;
+    --verde-claro: #e4ede7;
+    --dourado: #b8893b;
+
+    /* Painel do JSON */
+    --codigo-fundo: #1f2a25;
+    --codigo-cabecalho: #2a3832;
+    --codigo-texto: #bfe3cf;
+    --codigo-texto-suave: #c9d6cd;
+    --codigo-borda: #5c7468;
+    --codigo-hover: #38483f;
 }
-* { box-sizing: border-box; }
+
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+}
+
 body {
-    margin: 0; min-height: 100vh; color: var(--texto);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    background: var(--fundo);
+    color: var(--texto);
     font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-    line-height: 1.5; background: #0a1020;
-    display: flex; flex-direction: column;
+    line-height: 1.55;
 }
 
-/* fundo */
-.fundo { position: fixed; inset: 0; overflow: hidden; z-index: -1;
-    background: radial-gradient(120% 90% at 50% 0%, #17224a 0%, #0a1020 70%); }
-.fundo i { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .55; }
-.fundo i:nth-child(1) { width: 480px; height: 480px; background: #3b5bdb; top: -120px; left: -100px; }
-.fundo i:nth-child(2) { width: 420px; height: 420px; background: #0ea5a4; top: 35%; right: -140px; opacity: .4; }
-.fundo i:nth-child(3) { width: 380px; height: 380px; background: #9333ea; bottom: -140px; left: 25%; opacity: .35; }
+main {
+    flex: 1;
+    width: 100%;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 48px 20px 32px;
+}
 
-main { flex: 1; width: 100%; max-width: 980px; margin: 0 auto; padding: 56px 20px 32px; }
+h1 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+}
 
-/* Logo & Cabeçalho */
-.logo-container { display: flex; align-items: center; gap: 12px; }
-.logo-icone { width: 36px; height: 36px; flex-shrink: 0; }
-header h1 { margin: 0; font-size: 32px; font-weight: 600; letter-spacing: -0.015em; }
-header p { margin: 4px 0 28px; color: var(--suave); }
-h2 { margin: 0 0 16px; font-size: 16px; font-weight: 600; }
+h2 {
+    margin: 0 0 16px;
+    font-size: 16px;
+    font-weight: 600;
+}
 
-.vidro {
-    background: var(--vidro);
-    -webkit-backdrop-filter: blur(20px) saturate(150%);
-    backdrop-filter: blur(20px) saturate(150%);
+
+/* ==========================================================================
+   Cabeçalho
+   ========================================================================== */
+.topo {
+    background: var(--verde);
+}
+
+.topo-conteudo {
+    display: flex;
+    align-items: center;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 14px 20px;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.logo-icone {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+.logo-container span {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+
+/* ==========================================================================
+   Introdução
+   ========================================================================== */
+.subtitulo {
+    margin: 6px 0 28px;
+    color: var(--texto-suave);
+}
+
+
+/* ==========================================================================
+   Cartão de envio
+   ========================================================================== */
+.cartao {
+    margin-bottom: 20px;
+    padding: 24px;
+    background: var(--cartao);
     border: 1px solid var(--borda);
-    border-radius: 16px; padding: 22px; margin-bottom: 20px;
-    box-shadow: 0 10px 40px rgba(2, 6, 23, .35), inset 0 1px 0 rgba(255, 255, 255, .14);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(60, 50, 30, 0.06);
 }
-@supports not (backdrop-filter: blur(1px)) { .vidro { background: rgba(26, 36, 70, .92); } }
 
-.acoes { display: flex; flex-wrap: wrap; gap: 10px; }
+.acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Seletor de pasta */
 .selecionar {
     position: relative;
-    flex: 1 1 260px; min-width: 0; display: flex; align-items: center; cursor: pointer;
-    border: 1px dashed rgba(255, 255, 255, .28); border-radius: 10px; padding: 11px 14px;
-    color: var(--suave); background: rgba(255, 255, 255, .04); transition: border-color .2s, background .2s;
+    display: flex;
+    flex: 1 1 260px;
+    align-items: center;
+    min-width: 0;
+    padding: 11px 14px;
+    background: var(--fundo);
+    border: 1.5px dashed var(--borda-forte);
+    border-radius: 10px;
+    color: var(--texto-suave);
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
 }
-.selecionar:hover { border-color: var(--acento); background: rgba(255, 255, 255, .08); color: var(--texto); }
-.selecionar input { position: absolute; opacity: 0; width: 1px; height: 1px; }
-.selecionar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+.selecionar:hover {
+    background: var(--verde-claro);
+    border-color: var(--verde);
+    color: var(--verde);
+}
+
+.selecionar input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.selecionar span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Botões */
 button {
-    font: inherit; font-weight: 500; border-radius: 10px; padding: 11px 20px;
-    border: 1px solid transparent; cursor: pointer; color: var(--texto); transition: background .2s, border-color .2s;
+    padding: 11px 22px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
 }
-button:focus-visible, .selecionar:focus-within { outline: 2px solid var(--acento); outline-offset: 2px; }
-.primario { background: linear-gradient(135deg, #5b7cfa, #3f5fe0); box-shadow: 0 6px 18px rgba(63, 95, 224, .4); }
-.primario:hover:not(:disabled) { background: linear-gradient(135deg, #6d8bff, #4a6cf0); }
-.secundario { background: var(--vidro-forte); border-color: var(--borda); }
-.secundario:hover:not(:disabled) { border-color: var(--acento); }
-button:disabled { opacity: .45; cursor: not-allowed; }
 
-#resultado { margin: 14px 0 0; color: var(--suave); }
-#resultado:empty { display: none; }
+button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
 
-/* Scanner */
-.scanner { display: flex; flex-direction: column; align-items: center; padding: 18px 0 2px; }
-.scanner[hidden] { display: none; }
-.scanner svg { width: 220px; height: auto; overflow: visible; }
-.scanner p { margin: 6px 0 0; color: var(--suave); font-size: 14px; }
-.doc { fill: rgba(255, 255, 255, .08); stroke: var(--borda); stroke-width: 2; }
-.linha { fill: rgba(255, 255, 255, .2); transition: fill .35s; }
-.lente { fill: rgba(255, 255, 255, .1); stroke: #a5b8ff; stroke-width: 4; }
-.cabo { stroke: #a5b8ff; stroke-width: 6; stroke-linecap: round; }
-#lupa { transition: transform .5s ease-in-out; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .35)); }
+.primario {
+    background: var(--verde);
+    color: #ffffff;
+}
 
-/* Visualizador do JSON */
+.primario:hover:not(:disabled) {
+    background: var(--verde-hover);
+}
+
+.secundario {
+    background: transparent;
+    border-color: var(--verde);
+    color: var(--verde);
+}
+
+.secundario:hover:not(:disabled) {
+    background: var(--verde-claro);
+}
+
+button:focus-visible,
+.selecionar:focus-within,
+.logo-container:focus-visible {
+    outline: 2px solid var(--dourado);
+    outline-offset: 2px;
+}
+
+/* Mensagem de resultado */
+#resultado {
+    margin: 14px 0 0;
+    color: var(--texto-suave);
+}
+
+#resultado:empty {
+    display: none;
+}
+
+
+/* ==========================================================================
+   Animação do scanner
+   ========================================================================== */
+.scanner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 22px 0 2px;
+}
+
+.scanner[hidden] {
+    display: none;
+}
+
+.scanner svg {
+    width: 220px;
+    height: auto;
+    overflow: visible;
+}
+
+.scanner p {
+    margin: 6px 0 0;
+    color: var(--texto-suave);
+    font-size: 14px;
+}
+
+.doc {
+    fill: #ffffff;
+    stroke: var(--borda-forte);
+    stroke-width: 2;
+}
+
+.linha {
+    fill: var(--borda);
+    transition: fill 0.35s;
+}
+
+/* Linha sorteada pelo script: fica verde */
+.linha.verde {
+    fill: var(--verde);
+}
+
+.lente {
+    fill: rgba(47, 93, 80, 0.08);
+    stroke: var(--verde);
+    stroke-width: 4;
+}
+
+.cabo {
+    stroke: var(--verde);
+    stroke-width: 6;
+    stroke-linecap: round;
+}
+
+#lupa {
+    transform: translate(120px, 20px);
+    transition: transform 0.5s ease-in-out;
+    filter: drop-shadow(0 4px 6px rgba(60, 50, 30, 0.25));
+}
+
+
+/* ==========================================================================
+   Visualizador do JSON
+   ========================================================================== */
 .json-container {
     margin-top: 20px;
-    background: rgba(10, 16, 32, 0.7);
-    border: 1px solid var(--borda);
-    border-radius: 10px;
     overflow: hidden;
+    background: var(--codigo-fundo);
+    border-radius: 10px;
 }
-.json-container[hidden] { display: none; }
+
+.json-container[hidden] {
+    display: none;
+}
+
 .json-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     padding: 8px 14px;
-    background: rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid var(--borda);
+    background: var(--codigo-cabecalho);
+    color: var(--codigo-texto-suave);
     font-size: 13px;
-    color: var(--suave);
 }
+
 .btn-copiar {
     padding: 4px 10px;
+    background: transparent;
+    border: 1px solid var(--codigo-borda);
+    color: var(--verde-claro);
     font-size: 12px;
-    background: var(--vidro-forte);
-    border: 1px solid var(--borda);
 }
+
+.btn-copiar:hover {
+    background: var(--codigo-hover);
+}
+
 .json-container pre {
+    max-height: 250px;
     margin: 0;
     padding: 14px;
-    max-height: 250px;
     overflow-y: auto;
+    color: var(--codigo-texto);
     font-family: "IBM Plex Mono", monospace;
     font-size: 13px;
-    color: #34d399;
 }
 
-/* Rodapé */
+
+/* ==========================================================================
+   Rodapé
+   ========================================================================== */
 footer {
-    text-align: center;
     padding: 20px;
-    color: var(--suave);
-    font-size: 13px;
     border-top: 1px solid var(--borda);
-    background: rgba(10, 16, 32, 0.4);
+    color: var(--texto-suave);
+    font-size: 13px;
+    text-align: center;
 }
-footer p { margin: 0; }
 
-@media (prefers-reduced-motion: reduce) { #lupa, .linha { transition: none; } }
+footer p {
+    margin: 0;
+}
 
+
+/* ==========================================================================
+   Responsivo e acessibilidade
+   ========================================================================== */
 @media (max-width: 600px) {
-    main { padding-top: 32px; }
-    .vidro { padding: 16px; }
+    main {
+        padding-top: 32px;
+    }
+
+    .cartao {
+        padding: 18px;
+    }
+
+    .logo-container span {
+        font-size: 20px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #lupa,
+    .linha {
+        transition: none;
+    }
 }
