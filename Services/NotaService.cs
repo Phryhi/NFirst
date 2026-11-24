@@ -6,11 +6,18 @@ using System.Xml.Linq;
 using NFirst.Data;
 
 namespace NFirst.Services;
-
+/// <summary>
+/// Importa notas fiscais (NFC-e) a partir de arquivos XML, grava no banco de dados
+/// e gera os arquivos JSON de saída.
+/// </summary>
 public class NotaService
 {
     private const string NsNfe = "http://www.portalfiscal.inf.br/nfe";
-    private const bool ValidarDigitoVerificador = true;
+    private const string StatusAutorizada = "100";
+    private const int ModeloNfce = 65;
+    private const string ExtensaoXml = ".xml";
+    /// <summary>Pasta onde os arquivos JSON gerados são guardados.</summary>
+    public const string PastaTemp = "Temp";
 
     private static readonly XName NomeMod = XName.Get("mod", NsNfe);
     private static readonly XName NomeCpf = XName.Get("CPF", NsNfe);
@@ -22,6 +29,7 @@ public class NotaService
     {
         MaxDegreeOfParallelism = Environment.ProcessorCount
     };
+    // DtdProcessing.Prohibit protege contra XML malicioso com DTD externo (ataque XXE).
     private static readonly XmlReaderSettings ConfigLeitura = new XmlReaderSettings
     {
         DtdProcessing = DtdProcessing.Prohibit,
@@ -38,120 +46,20 @@ public class NotaService
         _context = context;
     }
 
-    public List<NotaFiscal> Listar()
+    public List<NotaFiscal> ListarNotas()
     {
         return _context.Notas.ToList();
     }
 
-    public NotaFiscal Enviar(NotaFiscal nota)
+    public NotaFiscal SalvarNota(NotaFiscal nota)
     {
         _context.Notas.Add(nota);
         _context.SaveChanges();
 
         return nota;
     }
-    public static string FormatarMesAno(string chave)
-    {
-        if (string.IsNullOrWhiteSpace(chave) || chave.Length != 44)
-        {
-            return null;
-        }
-
-        for (int i = 2; i <= 5; i++)
-        {
-            if (chave[i] < '0' || chave[i] > '9')
-            {
-                return null;
-            }
-        }
-
-        int numeroMes = (chave[4] - '0') * 10 + (chave[5] - '0');
-
-        if (numeroMes < 1 || numeroMes > 12)
-        {
-            return null;
-        }
-
-        string ano = "20" + chave.Substring(2, 2);
-        string mes = chave.Substring(4, 2);
-
-        return $"{mes}/{ano}";
-    }
-    private static bool UfValida(string chave)
-    {
-        int uf = (chave[0] - '0') * 10 + (chave[1] - '0');
-
-        return uf is 11 or 12 or 13 or 14 or 15 or 16 or 17
-                  or 21 or 22 or 23 or 24 or 25 or 26 or 27 or 28 or 29
-                  or 31 or 32 or 33 or 35
-                  or 41 or 42 or 43
-                  or 50 or 51 or 52 or 53;
-    }
-    private static bool DigitoVerificadorValido(string chave)
-    {
-        int soma = 0;
-        int peso = 2;
-
-        for (int i = 42; i >= 0; i--)
-        {
-            soma += (chave[i] - '0') * peso;
-            peso = peso == 9 ? 2 : peso + 1;
-        }
-
-        int resto = soma % 11;
-        int dv = resto < 2 ? 0 : 11 - resto;
-
-        return chave[43] - '0' == dv;
-    }
-
-    private static bool ChaveEhNfce(string chave)
-    {
-        if (string.IsNullOrWhiteSpace(chave) || chave.Length != 44)
-            return false;
-
-        for (int i = 0; i < 44; i++)
-        {
-            if (chave[i] < '0' || chave[i] > '9')
-                return false;
-        }
-
-        if (chave[20] != '6' || chave[21] != '5')
-            return false;
-
-        if (!UfValida(chave))
-            return false;
-
-        if (FormatarMesAno(chave) == null)
-            return false;
-
-        return !ValidarDigitoVerificador || DigitoVerificadorValido(chave);
-    }
-    private static bool PodeDescartarPeloNome(string nomeArquivo)
-    {
-        int separador = nomeArquivo.AsSpan().LastIndexOfAny('/', '\\');
-        ReadOnlySpan<char> nome = nomeArquivo.AsSpan(separador + 1);
-
-        if (nome.StartsWith("NFe", StringComparison.OrdinalIgnoreCase))
-        {
-            nome = nome.Slice(3);
-        }
-
-        if (nome.Length < 44)
-        {
-            return false;
-        }
-
-        for (int i = 0; i < 44; i++)
-        {
-            if (nome[i] < '0' || nome[i] > '9')
-            {
-                return false;
-            }
-        }
-
-        return nome[20] != '6' || nome[21] != '5';
-    }
-
+    // Mantém só arquivos .xml e já descarta, pelo nome, os que não são NFC-e,
+    // para não gastar tempo abrindo-os.
     private static List<IFormFile> SelecionarCandidatos(List<IFormFile> arquivos, out int descartadosPeloNome)
     {
         List<IFormFile> candidatos = new List<IFormFile>(arquivos.Count);
@@ -164,7 +72,7 @@ public class NotaService
                 continue;
             }
 
-            if (PodeDescartarPeloNome(arquivo.FileName))
+            if (ChaveNfce.PodeDescartarPeloNome(arquivo.FileName))
             {
                 descartadosPeloNome++;
                 continue;
@@ -184,23 +92,36 @@ public class NotaService
 
         return copia;
     }
-    private static Stream AbrirXml(IFormFile arquivo, object trava)
+    // Sem trava: lê direto do upload (uso sequencial).
+    // Com trava: copia para memória dentro do lock, porque o stream do IFormFile
+    // não é seguro para leituras concorrentes. Depois da cópia, o parse roda em paralelo.
+    private static Stream AbrirXml(IFormFile arquivo, object travaLeituraArquivo)
     {
-        if (trava == null)
+        if (travaLeituraArquivo == null)
         {
             return arquivo.OpenReadStream();
         }
 
-        lock (trava)
+        lock (travaLeituraArquivo)
         {
             return CopiarParaMemoria(arquivo);
         }
     }
 
-    // Gera o JSON sequencial a partir das notas JÁ VALIDADAS.
-    // Gera um arquivo mmaaaaxxxxx.txt por combinação de mês/ano + 5 primeiros dígitos do CNPJ.
-    // Devolve os nomes dos arquivos gerados (lista vazia se não houver notas).
-    public List<string> GuardarJsonNota(List<NotaFiscal> notasValidas)
+    /// <summary>
+    /// Gera os arquivos JSON de saída a partir de notas já validadas.
+    /// </summary>
+    /// <param name="notasValidas">Notas já aprovadas por <see cref="ProcessarArquivos"/>.</param>
+    /// <returns>
+    /// Os nomes dos arquivos gerados, dentro de <see cref="PastaTemp"/>.
+    /// A lista vem vazia se não houver notas.
+    /// </returns>
+    /// <remarks>
+    /// Gera um arquivo <c>mmaaaaxxxxx.txt</c> por combinação de mês/ano de emissão
+    /// com os 5 primeiros dígitos do CNPJ. Cada arquivo contém chave, série e mês/ano.
+    /// Arquivos com o mesmo nome são sobrescritos.
+    /// </remarks>
+    public List<string> GerarArquivosJson(List<NotaFiscal> notasValidas)
     {
         List<string> arquivosGerados = new List<string>();
 
@@ -216,7 +137,7 @@ public class NotaService
                      n => n.Chave.Substring(4, 2) + "20" + n.Chave.Substring(2, 2) + n.Chave.Substring(6, 5)))
         {
             string nomeArquivo = grupo.Key + ".txt";
-            var itens = grupo.Select(n => new { chave = n.Chave, serie = 65, mesAno = FormatarMesAno(n.Chave)});
+            var itens = grupo.Select(n => new { chave = n.Chave, serie = 65, mesAno = ChaveNfce.FormatarMesAno(n.Chave)});
             string json = JsonSerializer.Serialize(itens, OpcoesJson);
 
             string caminho = Path.Combine(pasta, nomeArquivo);
@@ -228,11 +149,25 @@ public class NotaService
 
         return arquivosGerados;
     }
-    public List<NotaFiscal> ValidarArquivos(List<IFormFile> arquivos, out int notasJaProcessadas)
+    /// <summary>
+    /// Lê os XMLs enviados e grava no banco as NFC-e novas e válidas.
+    /// </summary>
+    /// <param name="arquivos">Arquivos enviados. Os que não forem .xml são ignorados.</param>
+    /// <param name="quantidadeJaProcessadas">
+    /// Saída: quantas notas válidas foram ignoradas por já existirem no banco
+    /// ou aparecerem repetidas no próprio envio.
+    /// </param>
+    /// <returns>As notas novas, já gravadas no banco.</returns>
+    /// <remarks>
+    /// Atenção: além de validar, este método <b>grava no banco</b>. Notas inválidas
+    /// (não autorizadas, com CPF do destinatário, sem valor etc.) são descartadas
+    /// sem erro.
+    /// </remarks>
+    public List<NotaFiscal> ProcessarArquivos(List<IFormFile> arquivos, out int quantidadeJaProcessadas)
     {
         Stopwatch cronometro = Stopwatch.StartNew();
         List<NotaFiscal> notasValidas = new List<NotaFiscal>();
-        notasJaProcessadas = 0;
+        quantidadeJaProcessadas = 0;
 
         List<IFormFile> candidatos = SelecionarCandidatos(arquivos, out int descartadosPeloNome);
 
@@ -240,26 +175,28 @@ public class NotaService
         {
             return notasValidas;
         }
+        // Carrega as chaves do banco enquanto os XMLs são lidos.
         Task<HashSet<string>> carregarChaves = Task.Run(
             () => new HashSet<string>(_context.Notas.Select(n => n.Chave)));
 
-        NotaFiscal[] lidas = new NotaFiscal[candidatos.Count];
-        object trava = new object();
+        NotaFiscal[]notasLidas= new NotaFiscal[candidatos.Count];
+        object travaLeituraArquivo = new object();
 
         Parallel.For(0, candidatos.Count, OpcoesParalelo, i =>
         {
-            lidas[i] = ValidarNota(candidatos[i], trava);
+            notasLidas[i] = LerNota(candidatos[i], travaLeituraArquivo);
         });
 
         HashSet<string> chavesExistentes = carregarChaves.GetAwaiter().GetResult();
         int repetidas = 0;
-        foreach (NotaFiscal nota in lidas)
+        foreach (NotaFiscal nota in notasLidas)
         {
             if (nota == null)
             {
                 continue;
             }
-
+            // Add devolve false se a chave já existe, o que cobre tanto o banco
+            // quanto repetições dentro do mesmo envio.
             if (chavesExistentes.Add(nota.Chave))
             {
                 notasValidas.Add(nota);
@@ -276,33 +213,41 @@ public class NotaService
             _context.SaveChanges();
         }
 
-        notasJaProcessadas = repetidas;
+        quantidadeJaProcessadas = repetidas;
 
         Console.WriteLine($"Validação: {notasValidas.Count} novas, {repetidas} já processadas, {descartadosPeloNome} descartadas pelo nome, {cronometro.ElapsedMilliseconds} ms");
 
         return notasValidas;
     }
-
-    public NotaFiscal ValidarNota(IFormFile arquivo)
+    /// <summary>
+    /// Lê um único arquivo XML e devolve a nota correspondente.
+    /// </summary>
+    /// <param name="arquivo">Arquivo XML enviado.</param>
+    /// <returns>A nota, ou <c>null</c> se o arquivo for inválido ou não puder ser lido.</returns>
+    /// <remarks>Não grava no banco.</remarks>
+    public NotaFiscal LerNota(IFormFile arquivo)
     {
-        return ValidarNota(arquivo, null);
+        return LerNota(arquivo, null);
     }
 
-    private NotaFiscal ValidarNota(IFormFile arquivo, object trava)
+    private NotaFiscal LerNota(IFormFile arquivo, object travaLeituraArquivo)
     {
         try
         {
-            using Stream stream = AbrirXml(arquivo, trava);
+            using Stream stream = AbrirXml(arquivo, travaLeituraArquivo);
 
-            return ValidarNotaXml(stream);
+            return LerNotaXml(stream);
         }
+        // Um arquivo ruim não pode derrubar o lote inteiro: registramos o erro e seguimos.
         catch (Exception erro)
         {
             Console.WriteLine("Erro ao validar o arquivo " + arquivo.FileName + ": " + erro.Message);
             return null;
         }
     }
-    private static NotaFiscal ValidarNotaXml(Stream stream)
+    // Devolve a nota se for uma NFC-e autorizada (cStat 100), modelo 65, sem CPF do
+    // destinatário e com valor numérico válido. Devolve null se alguma regra falhar.
+    private static NotaFiscal LerNotaXml(Stream stream)
     {
         using XmlReader reader = XmlReader.Create(stream, ConfigLeitura);
         XDocument documento = XDocument.Load(reader);
@@ -320,13 +265,13 @@ public class NotaService
         {
             return null;
         }
-
+        // No XML, o atributo Id vem com o prefixo "NFe" antes dos 44 dígitos.
         if (chave.StartsWith("NFe", StringComparison.Ordinal))
         {
             chave = chave.Substring(3);
         }
 
-        if (!ChaveEhNfce(chave))
+        if (!ChaveNfce.EhNfce(chave))
         {
             return null;
         }
@@ -334,7 +279,7 @@ public class NotaService
         XElement infProt = documento.Descendants(XName.Get("infProt", NsNfe)).FirstOrDefault();
 
         string cStat = infProt?.Element(XName.Get("cStat", NsNfe))?.Value;
-
+        // 100 = "Autorizado o uso da NF-e".
         if (cStat != "100")
         {
             return null;
@@ -349,7 +294,7 @@ public class NotaService
         }
 
         XElement dest = infNfe.Element(XName.Get("dest", NsNfe));
-
+        // Só importamos notas sem CPF do destinatário (consumidor não identificado).
         if (dest?.Element(NomeCpf) != null)
         {
             return null;
@@ -357,7 +302,8 @@ public class NotaService
 
         XElement total = infNfe.Element(XName.Get("total", NsNfe));
         string textoValor = total?.Element(NomeIcmsTot)?.Element(NomeVnf)?.Value;
-
+        // InvariantCulture: o XML usa ponto como separador decimal, independente da
+        // cultura do servidor.
         if (textoValor == null ||
             !decimal.TryParse(textoValor, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal valor))
         {

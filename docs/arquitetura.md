@@ -72,7 +72,7 @@ As etapas numeradas de 1 a 4 correspondem às seções de [regras-de-negocio.md]
 | :--- | :--- | :---: |
 | `POST /Notas/EnviarArquivos` | Valida os arquivos XML, salva as notas válidas, gera os arquivos de exportação e retorna a mensagem de resumo, os nomes dos arquivos e as notas em JSON. | Sim |
 | `GET /Notas/Download/{nome}` | Retorna um arquivo gerado, a partir do nome informado na resposta do envio. Retorna o erro 404 se o arquivo não existir. | Sim |
-| `POST /Notas/ValidarArquivos` | Valida os arquivos XML, salva as notas válidas e retorna a lista de notas. Não gera os arquivos de exportação. Apesar do nome, também grava no banco de dados. | Não |
+| `POST /Notas/ProcessarArquivos` | Valida os arquivos XML, salva as notas válidas e retorna a lista de notas. Não gera os arquivos de exportação. Apesar do nome, também grava no banco de dados. | Não |
 | `GET /Notas` | Retorna todas as notas salvas. | Não |
 | `POST /Notas` | Salva uma nota enviada em JSON, sem passar pelas validações dos arquivos XML. | Não |
 

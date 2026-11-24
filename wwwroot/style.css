@@ -3,8 +3,9 @@
    ========================================================================== */
 :root {
     /* Superfícies */
+    --branco: #ffffff;
     --fundo: #f5f1e8;
-    --cartao: #ffffff;
+    --cartao: var(--branco);
 
     /* Texto */
     --texto: #23302b;
@@ -89,7 +90,7 @@ h2 {
     display: flex;
     align-items: center;
     gap: 10px;
-    color: #ffffff;
+    color: var(--branco);
     text-decoration: none;
 }
 
@@ -105,7 +106,6 @@ h2 {
     letter-spacing: -0.01em;
 }
 
-
 /* ==========================================================================
    Introdução
    ========================================================================== */
@@ -113,7 +113,6 @@ h2 {
     margin: 6px 0 28px;
     color: var(--texto-suave);
 }
-
 
 /* ==========================================================================
    Cartão de envio
@@ -154,7 +153,8 @@ h2 {
     border-color: var(--verde);
     color: var(--verde);
 }
-
+/* Escondido só visualmente: continua acessível por teclado e leitor de tela
+   (por isso não usamos display: none). */
 .selecionar input {
     position: absolute;
     width: 1px;
@@ -186,7 +186,7 @@ button:disabled {
 
 .primario {
     background: var(--verde);
-    color: #ffffff;
+    color: var(--branco);
 }
 
 .primario:hover:not(:disabled) {
@@ -215,7 +215,7 @@ button:focus-visible,
     margin: 14px 0 0;
     color: var(--texto-suave);
 }
-
+/* Esconde o parágrafo vazio para não deixar espaço em branco. */
 #resultado:empty {
     display: none;
 }
@@ -230,7 +230,7 @@ button:focus-visible,
     align-items: center;
     padding: 22px 0 2px;
 }
-
+/* O display definido acima sobrepõe o atributo hidden do HTML; esta regra o faz valer de novo. */
 .scanner[hidden] {
     display: none;
 }
@@ -248,7 +248,7 @@ button:focus-visible,
 }
 
 .doc {
-    fill: #ffffff;
+    fill: var(--branco);
     stroke: var(--borda-forte);
     stroke-width: 2;
 }
@@ -258,11 +258,11 @@ button:focus-visible,
     transition: fill 0.35s;
 }
 
-/* Linha sorteada pelo script: fica verde */
+/* Linha sorteada pelo script -> fica verde */
 .linha.verde {
     fill: var(--verde);
 }
-
+/* Verde da marca (--verde) com 8% de opacidade. */
 .lente {
     fill: rgba(47, 93, 80, 0.08);
     stroke: var(--verde);
@@ -274,7 +274,7 @@ button:focus-visible,
     stroke-width: 6;
     stroke-linecap: round;
 }
-
+/* A transição (0.5s) precisa ser menor que PAUSA_MOVIMENTO_LUPA_MS (550 ms) no script.js. */
 #lupa {
     transform: translate(120px, 20px);
     transition: transform 0.5s ease-in-out;
@@ -291,7 +291,7 @@ button:focus-visible,
     background: var(--codigo-fundo);
     border-radius: 10px;
 }
-
+/* O display definido acima sobrepõe o atributo hidden do HTML; esta regra o faz valer de novo. */
 .json-container[hidden] {
     display: none;
 }

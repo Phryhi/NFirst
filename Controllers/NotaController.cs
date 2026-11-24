@@ -2,7 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using NFirst.Services;
 
 namespace NFirst.Controllers;
-
+/// <summary>
+/// Endpoints para consultar, cadastrar e importar notas fiscais (NFC-e).
+/// </summary>
 [ApiController]
 [Route("[controller]")]
 public class NotasController : ControllerBase
@@ -13,35 +15,42 @@ public class NotasController : ControllerBase
     {
         _service = service;
     }
-
+    /// <summary>Lista todas as notas cadastradas.</summary>
     [HttpGet]
-    public IActionResult Listar()
+    public IActionResult ListarNotas()
     {
-        var notas = _service.Listar();
+        var notas = _service.ListarNotas();
 
         return Ok(notas);
     }
-
+    /// <summary>Lista todas as notas cadastradas.</summary>
     [HttpPost]
-    public IActionResult Enviar(NotaFiscal nota)
+    public IActionResult SalvarNota(NotaFiscal nota)
     {
-        var resultado = _service.Enviar(nota);
+        var resultado = _service.SalvarNota(nota);
 
         return Ok(resultado);
     }
-        
+    /// <summary>
+    /// Importa XMLs de NFC-e, grava as notas novas e gera os arquivos JSON.
+    /// </summary>
+    /// <param name="arquivos">Arquivos XML enviados no formulário.</param>
+    /// <returns>
+    /// Uma mensagem-resumo, os nomes dos arquivos gerados (para usar em <c>Download</c>)
+    /// e o resumo das notas salvas.
+    /// </returns>
     [HttpPost("EnviarArquivos")]
-    public IActionResult EnviarArquivos(List<IFormFile> arquivos)
+    public IActionResult SalvarNotaArquivos(List<IFormFile> arquivos)
     {
-        var notasValidas = _service.ValidarArquivos(arquivos, out int notasJaProcessadas);
-        List<string> nomesArquivos = _service.GuardarJsonNota(notasValidas);
+        var notasValidas = _service.ProcessarArquivos(arquivos, out int quantidadeJaProcessadas);
+        List<string> nomesArquivos = _service.GerarArquivosJson(notasValidas);
 
-        var chaves = notasValidas.Select(n => new {chave = n.Chave, serie = 65, mesAno = NotaService.FormatarMesAno(n.Chave)}).ToList();
+        var chaves = notasValidas.Select(n => new {chave = n.Chave, serie = 65, mesAno = ChaveNfce.FormatarMesAno(n.Chave)}).ToList();
         string mensagem;
 
-        if (notasJaProcessadas > 0)
+        if (quantidadeJaProcessadas > 0)
         {
-            mensagem = $"Recebi {arquivos.Count} arquivos, {notasJaProcessadas} já haviam sido processados, {notasValidas.Count} notas salvas.";
+            mensagem = $"Recebi {arquivos.Count} arquivos, {quantidadeJaProcessadas} já haviam sido processados, {notasValidas.Count} notas salvas.";
         }
         else if (notasValidas.Count == 0)
         {
@@ -54,17 +63,29 @@ public class NotasController : ControllerBase
 
         return Ok(new { mensagem = mensagem, arquivos = nomesArquivos, notas = chaves });
     }
+    /// <summary>
+    /// Processa XMLs de NFC-e e devolve as notas novas, sem gerar arquivos JSON.
+    /// </summary>
+    /// <remarks>
+    /// Apesar de a rota sugerir só validação, este endpoint <b>grava as notas novas no banco</b>.
+    /// O nome da rota foi mantido para não quebrar quem já a utiliza.
+    /// </remarks>
     [HttpPost("ValidarArquivos")]
-    public IActionResult ValidarArquivos(List<IFormFile> arquivos)
+    public IActionResult ProcessarArquivos(List<IFormFile> arquivos)
     {
-        int notasJaProcessadas;
-        List<NotaFiscal> notasValidas = _service.ValidarArquivos(arquivos,out notasJaProcessadas);
+        int quantidadeJaProcessadas;
+        List<NotaFiscal> notasValidas = _service.ProcessarArquivos(arquivos,out quantidadeJaProcessadas);
         return Ok(notasValidas);
     }
-
+    /// <summary>
+    /// Baixa um arquivo JSON gerado anteriormente.</c>.
+    /// </summary>
+    /// <param name="nome">Nome do arquivo, como devolvido por <c>EnviarArquivos</c>.</param>
+    /// <returns>O arquivo, ou 404 se ele não existir.</returns>
     [HttpGet("Download/{nome}")]
     public IActionResult Download(string nome)
     {
+        // Path.GetFileName impede que o cliente peça arquivos fora da pasta.
         string nomeSeguro = Path.GetFileName(nome);
         string caminho = Path.Combine("Temp", nomeSeguro);
 

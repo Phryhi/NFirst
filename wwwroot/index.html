@@ -33,15 +33,16 @@
 
             <div class="acoes">
                 <label class="selecionar" id="caixaInput" for="pasta">
+                    <!-- webkitdirectory faz o navegador selecionar a pasta inteira, não um arquivo. -->
                     <input type="file" id="pasta" webkitdirectory>
                     <span id="rotuloPasta">Selecionar pasta</span>
                 </label>
-                <button id="btnEnviar" class="primario" onclick="processar()">Enviar pasta</button>
-                <button id="btnBaixar" class="secundario" onclick="baixarJson()" disabled>Baixar TXT</button>
+                <button id="btnEnviar" class="primario" onclick="processarPasta()">Enviar pasta</button>
+                <button id="btnBaixar" class="secundario" onclick="baixarArquivosGerados()" disabled>Baixar TXT</button>
             </div>
 
             <p id="resultado" role="status"></p>
-
+            <!-- Os ids "scanner" e "lupa" e a classe "linha" são usados pelo script.js. -->
             <div id="scanner" class="scanner" hidden aria-label="Processando arquivos">
                 <svg viewBox="0 0 240 180" aria-hidden="true">
                     <rect class="doc" x="40" y="8" width="130" height="162" rx="10"/>
@@ -70,7 +71,7 @@
     </main>
 
     <footer>
-        <p>&copy;NFirst - Desenvolvido por 404.</p>
+        <p>&copy; NFirst - Desenvolvido por 404.</p>
     </footer>
 
     <script src="script.js"></script>
